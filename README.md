@@ -26,41 +26,8 @@ Mega AI is a containerized, local-first multi-agent system built with FastAPI, P
 
 ## Architecture
 
-```
-Client
-  |
-  | POST /query
-  v
-FastAPI SSE Endpoint
-  |
-  v
-Master Orchestrator
-  |  LLM-based routing decision (structured JSON) per turn
-  |  Every decision logged to SharedContext.history and persisted to PostgreSQL
-  |
-  +--> DecompositionAgent      Parses query into typed task DAG with dependency resolution
-  |
-  +--> MultiHopRAGAgent        Two-hop retrieval reasoning with per-chunk citation mapping
-  |
-  +--> CritiqueAgent           Span-level confidence scoring and self-reflection tool call
-  |
-  +--> SynthesisAgent          Merges outputs, resolves contradictions, builds provenance map
-  |
-  +--> CompressionAgent        Triggered by ContextManager when token budget is exceeded
+<img width="2562" height="1033" alt="Mega_ai drawio" src="https://github.com/user-attachments/assets/aa3819e7-d9e9-422e-9338-d14a59e6b96e" />
 
-Tools (called by agents via SharedContext, never directly between agents)
-  |
-  +--> SearchTool              DuckDuckGo instant-answer stub with structured failure contract
-  +--> PythonTool              Sandboxed Python execution with blocked unsafe operations
-  +--> SQLTool                 Read-only SELECT execution against PostgreSQL
-  +--> SelfReflectionTool      LLM re-reads prior context and surfaces contradictions
-
-Persistence
-  |
-  +--> JobExecution            Full trace per job: routing decisions, agent outputs, tool calls, token counts
-  +--> EvaluationRun           Per-case scores and justifications per eval run
-  +--> PromptVersion           Proposed and approved prompt rewrites with approval audit trail
-```
 
 All inter-agent communication flows exclusively through a typed `SharedContext` object. Agents do not call one another. The orchestrator mediates every handoff and logs its routing rationale before each step.
 
